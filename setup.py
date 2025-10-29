@@ -50,11 +50,10 @@ setup(name='docassemble.DelegationOfParentalAuthority',
       long_description_content_type='text/markdown',
       author='Coleman Silver',
       author_email='csilver2@su.suffolk.edu',
-      license='MIT',
+      license='',
       url='https://courtformsonline.org',
       packages=find_namespace_packages(),
       install_requires=['docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main', 'docassemble.GithubFeedbackForm @ git+https://github.com/SuffolkLITLab/docassemble-GithubFeedbackForm.git@main', 'docassemble.InterviewStats @ git+https://github.com/SuffolkLITLab/docassemble-InterviewStats.git.git@main'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/DelegationOfParentalAuthority/', package='docassemble.DelegationOfParentalAuthority'),
      )
-

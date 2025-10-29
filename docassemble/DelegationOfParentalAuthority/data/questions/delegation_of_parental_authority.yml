@@ -1,8 +1,7 @@
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
-  - docassemble.ALAnyState:any_state.yml
-  - MN_Courts.yml
+#  - docassemble.MNCourts:MN_Courts.yml
 ---
 metadata:
   title: >-
@@ -11,8 +10,8 @@ metadata:
     Delegate parental auth.
   description: |-
     This interview helps someone in Minnesota delegate parental authority of their child .
-  tags:
-    - "FA-14-00-00-00"
+#  tags:
+#    - "FA-14-00-00-00"
   authors:
     - Coleman Silver
   original_form:
@@ -21,7 +20,6 @@ metadata:
     https://www.revisor.mn.gov/statutes/cite/524.5-211
   help_page_title: >-
     2022 Minnesota Statutes
-  allowed_courts: []
   typical_role: "na"
   al_weaver_version: "1.10.2"
   generated_on: "2023-11-12"
@@ -35,6 +33,9 @@ code: |
   AL_DEFAULT_STATE = "MN"
 ---
 code: |
+  AL_ORGANIZATION_TITLE = "LawHelpMN" 
+---
+code: |
   github_repo_name =  'docassemble-DelegationOfParentalAuthority'
 ---
 code: |
@@ -46,6 +47,7 @@ code: |
 objects:
   - users: ALPeopleList.using(ask_number=True, target_number=1)
   - other_parties: ALPeopleList.using(ask_number=True, target_number=0)
+  - al_logo: DAStaticFile.using(filename="MNfavicon-96x96.png", alt_text="LawHelpMN") 
 ---
 sections:
   - review_delegation_of_parental_authority: Review your answers
