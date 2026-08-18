@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools==80.9.0",
+    "setuptools>=80.9.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -10,12 +10,12 @@ version = "1.0"
 description = "Delegation of parental authority"
 readme = "README.md"
 authors = [
-    { name = "Coleman Silver", email = "csilver2@su.suffolk.edu" },
+    { name = "Amanda Sauber", email = "alsauber@mnlegalservices.org" },
 ]
 dependencies = [
     "docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main",
     "docassemble.GithubFeedbackForm @ git+https://github.com/SuffolkLITLab/docassemble-GithubFeedbackForm.git@main",
-    "docassemble.InterviewStats @ git+https://github.com/SuffolkLITLab/docassemble-InterviewStats.git.git@main",
+    "docassemble.InterviewStats @ git+https://github.com/SuffolkLITLab/docassemble-InterviewStats.git@date-filter",
 ]
 
 [project.urls]

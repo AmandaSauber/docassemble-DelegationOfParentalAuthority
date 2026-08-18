@@ -1,25 +1,83 @@
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
-#  - docassemble.MNCourts:MN_Courts.yml
+  - docassemble.MNCourts:MN_Courts.yml
+---
+### About page in Footer ###
+---
+comment: |
+  Overrides About page from `al_visual.yml`
+template: about_this_interview_version_info
+content: |
+  % if all_variables(special='metadata').get('help_page_title','').rstrip() and all_variables(special='metadata').get('help_page_url','').rstrip():
+  To learn more about this legal topic, go to: [${ all_variables(special='metadata').get('help_page_title','').rstrip() }](${ all_variables(special='metadata').get('help_page_url','').rstrip() }).
+  % endif
+
+  % if interview_metadata.get("main_interview_key"):
+    <%
+      MAIN_METADATA = interview_metadata[interview_metadata["main_interview_key"]]
+    %>
+  % elif len(interview_metadata) > 1:    
+    <% 
+      del(interview_metadata["main_interview_key"]) # DADict creates the key on lookup above
+      MAIN_METADATA = next(iter(interview_metadata.values())) 
+    %>
+  % else:
+    <% MAIN_METADATA = all_variables(special='metadata') %>
+  % endif
+  <% ORIGINAL_FORMS = MAIN_METADATA.get("original_form", []) if isinstance(MAIN_METADATA.get("original_form"), list) else ([MAIN_METADATA.get("original_form", "")] if MAIN_METADATA.get("original_form") else []) %>
+
+  % if len(ORIGINAL_FORMS) > 1:
+  View the original version of this form at the links below:
+
+  % for url in [url for url in ORIGINAL_FORMS if url.strip() != "None" and url.startswith("http")]:
+  * [${ url }](${ url })
+  % endfor
+  % elif len(ORIGINAL_FORMS) == 1:
+  [View the original version of this form](${ ORIGINAL_FORMS[0] }).
+  % endif
+
+  To learn more about this legal topic, go to: [Delegation of Parental Authority](https://www.lawhelpmn.org/self-help-library/family/delegation-parental-authority-dopa).
+  
+  [LawHelpMN](https://www.lawhelpmn.org/about-us) made this free tool. The goal of the LawHelpMN website is to provide accurate and easy-to-understand legal information. LawHelpMN is maintained by [Legal Services State Support](https://www.mnlegalservices.org/), which is non-profit that works to improve understanding and access to the civil legal justice system for all Minnesotans.
+
+  **Version Information:** "${all_variables(special='metadata').get('title','').rstrip()}" version `${ package_version_number }`. This tool also uses code from the Document Assembly Line Project, version `${ al_version }`.
+---
+default screen parts:  
+#  exit link: exit                    # sets behavior of Exit buttons
+#  exit url: https://www.lawhelpmn.org/
+#  right: |
+#    ✎ [Review / Edit Answers](${ url_action('review_full') })
+  under: |
+    % if not user_logged_in():
+    [:key: Sign in](${url_of('login', next=interview_url())}) or [sign up](${url_of('register', next=interview_url())}) to save your progress. You can use this program without signing in, but your information is NOT saved. You can't come back to it later.   
+    % endif
+#  footer: |
+#    [:comment-dots: Feedback](${ feedback_link(user_info(), github_repo="docassemble-DemandForPaymentLetter") } ){:target="_blank"}
+---
+features:
+  bootstrap theme: LawHelpMNBranding_custom.css
+  labels above fields: True
+  navigation: True
+  progress bar: True
 ---
 metadata:
   title: >-
-    Delegation of parental authority
+    Delegation of Parental Authority
   short title: >-
-    Delegate parental auth.
+    DOPA
   description: |-
     This interview helps someone in Minnesota delegate parental authority of their child .
 #  tags:
 #    - "FA-14-00-00-00"
   authors:
     - Coleman Silver
-  original_form:
-    - https://www.lawhelpmn.org/sites/default/files/2018-11/Delegation%20of%20Parental%20Authority%20form.pdf
+#  original_form:
+#    - https://www.lawhelpmn.org/sites/default/files/2018-11/Delegation%20of%20Parental%20Authority%20form.pdf
   help_page_url: >-
     https://www.revisor.mn.gov/statutes/cite/524.5-211
-  help_page_title: >-
-    2022 Minnesota Statutes
+#  help_page_title: >-
+#    2022 Minnesota Statutes
   typical_role: "na"
   al_weaver_version: "1.10.2"
   generated_on: "2023-11-12"
@@ -50,7 +108,15 @@ objects:
   - al_logo: DAStaticFile.using(filename="MNfavicon-96x96.png", alt_text="LawHelpMN") 
 ---
 sections:
-  - review_delegation_of_parental_authority: Review your answers
+  - Introduction
+  - Your Name
+  - County
+  - Duration
+  - Child Information:
+    - Name
+    - Date of Birth
+  - Attorney-in-Fact
+  - Signing Date
 ---
 #################### Interview order #####################
 comment: |
@@ -59,7 +125,7 @@ id: interview_order_delegation_of_parental_authority
 code: |
   # Set the allowed courts for this interview
   allowed_courts = []
-  nav.set_section("review_delegation_of_parental_authority")
+  nav.set_section("display=True")
   user_role = "na"
   user_ask_role = "na"
   users.gather()
@@ -102,23 +168,46 @@ code: |
   )
   delegation_of_parental_authority_download
 ---
-comment: |
-  This question is used to introduce your interview. Please customize
 id: Delegation_of_parental_authority
 continue button field: delegation_of_parental_authority_intro
 question: |
-  Delegation of parental authority
+  **Delegation of Parental Authority**
 subquestion: |
-  This interview will help you delegation of parental authority. A Delegation of Parental Authority (DOPA) is a document that lets someone take care of your children when you can’t. The person you give this permission to is called an “Attorney-in-Fact.” The Attorney-in-Fact does not need to be a licensed attorney. 
+  This interview will help you create a Delegation of Parental Authority. A Delegation of Parental Authority (DOPA) is a document that lets someone temporarily take care of your children when you can’t. 
   
-  When you are finished, you will need to:
+  The person you give this permission to is called an “Attorney-in-Fact.” The Attorney-in-Fact does not need to be a licensed attorney. 
+  
+  ${ collapse_template(dopa_explained) }
+  
+  **When you are finished, you will need to:**
   
   1. Sign the document (in the presence of a notary);
   2. Have the Attorney-in-Fact sign the document (in the presence of a notary);
   3. Have the document signed by a notary;
   4. File with the court. 
   
-  Most people take about 10 minutes to finish this interview.
+  Most people take about 10-20 minutes to finish this interview.
+section: Introduction
+---
+template: dopa_explained
+subject: |
+  What does a Delegation of Parental Authority do?
+content: |
+  **What this form does:**
+  
+  This form gives **temporary** authority to the Attorney-in-Fact and allows them to: 
+
+  - provide a home, care, and supervision of your child,
+
+  - get medical treatment for your child,
+
+  - and enroll your child in school.
+
+  **What this form does NOT do:**
+
+  - Establish custody of the child/ren, or
+  
+  - Allow your Attorney-in-Fact to consent to the marriage or adoption of your child.
 ---
 id: Children
 question: |
@@ -142,18 +231,20 @@ question: |
 fields:
   - no label: x.there_are_any
     datatype: yesnoradio
+section: Your Name
 ---
 id: name of the first person
 sets:
   - x[0].name.first
   - x[0].name.last
   - x[0].name.middle
-  - x[0].name.suffix
+#  - x[0].name.suffix
 question: |
   What is the name of the attorney-in-fact?
 fields:
   - code: |
       attorneys_name_full__1
+section: Attorney-in-Fact
 ---
 objects:
   - users: ALPeopleList.using(ask_number=True, target_number=1)
@@ -164,7 +255,7 @@ sets:
   - x[0].name.first
   - x[0].name.last
   - x[0].name.middle
-  - x[0].name.suffix
+#  - x[0].name.suffix
 generic object: ALPeopleList
 question: |
   % if hasattr(x, 'ask_number') and x.ask_number and x.target_number == 1:
@@ -183,8 +274,9 @@ subquestion: |
   The county where you live and will be filing the DOPA form.
 fields:
   - "What county do you live in?": the_county
-#    code: sorted(the_courts.county_list())
-    maxlength: 22
+    code: sorted(the_courts.county_list())
+#    maxlength: 22
+section: County
 ---
 id: Duration
 question: |
@@ -207,6 +299,7 @@ fields:
       is: duration_specific_date
     max: ${ today().plus(days=364).format('yyyy-MM-dd') }
     min: ${ today().format('yyyy-MM-dd') }
+section: Duration
 ---
 id: how many children
 comment: |
@@ -236,23 +329,23 @@ question: |
 fields:
   - "What is the date the which you and your Attorney-in-Fact will sign the document?": attorneys_signature_date
     datatype: date
+section: Signing Date
 ---
-id: preview delegation_of_parental_authority
-question: |
-  Preview your form before you sign it
-subquestion: |
-  Here is a preview of the form you will sign on the next page.   
+#id: preview delegation_of_parental_authority
+#question: |
+#  Preview your form before you sign it
+#subquestion: |
+#  Here is a preview of the form you will sign on the next page.   
   
-  ${ al_court_bundle.as_pdf(key='preview') }
+#  ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit answers" button
-  to edit your answers.
+#  Click the image to open it in a new tab. Click the "Edit answers" button to edit your answers.
 
-  ${ action_button_html(url_action('review_delegation_of_parental_authority'), label='Edit answers', color='info') }
+#  ${ action_button_html(url_action('review_delegation_of_parental_authority'), label=':edit: Edit answers', color='warning') }
   
-  Remember to come back to this window to continue and sign your form.
-continue button field: delegation_of_parental_authority_preview_question    
----
+#  Remember to come back to this window to continue and sign your form.
+#continue button field: delegation_of_parental_authority_preview_question    
+#---
 code: |
   signature_fields = ['users[0].signature', 'attorneys[0].signature']
 ---
@@ -268,10 +361,10 @@ event: review_delegation_of_parental_authority
 question: |
   Review your answers
 review:
-  - Edit: filing_county
+  - Edit: the_county
     button: |
       **What county do you live in?**:
-      ${ filing_county }
+      ${ the_county }
   - Edit: users.revisit
     button: |
       **Users**
@@ -407,7 +500,7 @@ subquestion: |
   
   View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
 
-  ${ action_button_html(url_action('review_delegation_of_parental_authority'), label='Edit answers', color='info') }
+  ${ action_button_html(url_action('review_delegation_of_parental_authority'), label=':edit: Edit answers', color='warning') }
   
   
   ${ al_user_bundle.download_list_html() }
@@ -445,7 +538,7 @@ attachment:
   skip undefined: True
   pdf template file: delegation_of_parental_authority.pdf
   fields:
-      - "filing_county": ${ filing_county }
+      - "the_county": ${ the_county }
       - "users1_name_full": ${ users[0] }
       - "children_name_full": ${ children[0] }
       - "children_name_full__1": ${ children[0] }
